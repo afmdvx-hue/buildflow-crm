@@ -1,0 +1,1180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BuildFlow CRM</title>
+<style>
+:root{--bg:#111110;--bg2:#1a1a18;--bg3:#222220;--bg4:#2a2a28;--border:#2e2e2c;--border2:#3a3a37;--text:#e8e6e0;--text2:#9e9c96;--text3:#5c5b57;--purple:#9f8fef;--purple-bg:#2d2540;--green:#5fb96a;--green-bg:#1a2e1e;--amber:#d4a030;--amber-bg:#2e2410;--red:#d46060;--red-bg:#2e1414;--blue:#4a9edd;--blue-bg:#0e2030;--teal:#3cbfbf;--teal-bg:#0e2828;--r:8px}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);font-size:13px;display:flex;height:100vh;overflow:hidden}
+.sidebar{width:220px;background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0}
+.logo-row{padding:16px 14px 10px;display:flex;align-items:center;gap:9px}
+.logo-icon{width:26px;height:26px;background:var(--text);border-radius:6px;display:flex;align-items:center;justify-content:center}
+.logo-icon svg{width:14px;height:14px;color:var(--bg)}
+.logo-name{font-weight:600;font-size:14px}
+.nav-section{padding:4px 8px;margin-top:6px}
+.nav-label{font-size:11px;color:var(--text3);padding:4px 8px;text-transform:uppercase;letter-spacing:.06em;margin-bottom:2px}
+.nav-item{display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:6px;cursor:pointer;color:var(--text2);transition:background .1s;user-select:none}
+.nav-item:hover{background:var(--bg3);color:var(--text)}
+.nav-item.active{background:var(--bg3);color:var(--text)}
+.nav-item svg{width:15px;height:15px;flex-shrink:0;opacity:.75}
+.nav-item.active svg{opacity:1}
+.nav-count{margin-left:auto;font-size:11px;color:var(--text3);background:var(--bg4);padding:1px 6px;border-radius:10px}
+.sidebar-bottom{margin-top:auto;padding:12px 8px;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:4px}
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.topbar{display:flex;align-items:center;gap:12px;padding:0 20px;height:48px;border-bottom:1px solid var(--border);flex-shrink:0}
+.topbar-title{font-size:14px;font-weight:500}
+.topbar-actions{margin-left:auto;display:flex;gap:8px;align-items:center}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:5px 12px;border-radius:var(--r);border:1px solid var(--border2);background:transparent;color:var(--text2);cursor:pointer;font-size:12px;transition:background .1s,color .1s;white-space:nowrap;font-family:inherit}
+.btn:hover{background:var(--bg3);color:var(--text)}
+.btn-primary{background:var(--text);color:var(--bg);border-color:var(--text)}
+.btn-primary:hover{background:#ccc}
+.btn svg{width:13px;height:13px}
+.btn-ai{background:var(--purple-bg);color:var(--purple);border-color:var(--purple-bg)}
+.btn-ai:hover{background:#3a2f55}
+.filter-bar{display:flex;align-items:center;gap:8px;padding:8px 20px;border-bottom:1px solid var(--border);flex-shrink:0}
+.filter-pill{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:20px;border:1px solid var(--border2);background:transparent;color:var(--text2);cursor:pointer;font-size:12px;font-family:inherit}
+.filter-pill:hover{background:var(--bg3);color:var(--text)}
+.filter-count{margin-left:auto;font-size:12px;color:var(--text3)}
+.table-wrap{flex:1;overflow:auto}
+table{width:100%;border-collapse:collapse}
+thead th{position:sticky;top:0;background:var(--bg2);padding:8px 12px;text-align:left;font-size:11px;font-weight:500;color:var(--text3);border-bottom:1px solid var(--border);white-space:nowrap;user-select:none}
+tbody tr{border-bottom:1px solid var(--border);cursor:pointer;transition:background .1s}
+tbody tr:hover{background:var(--bg2)}
+tbody td{padding:9px 12px;font-size:13px;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:180px}
+tbody td.primary{color:var(--text);font-weight:500}
+.cb-col{width:36px;padding:0 12px !important}
+input[type=checkbox]{accent-color:var(--purple);width:13px;height:13px;cursor:pointer}
+.badge{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:500;white-space:nowrap}
+.badge::before{content:'';width:5px;height:5px;border-radius:50%;flex-shrink:0}
+.b-new{background:var(--bg4);color:var(--text2)}.b-new::before{background:var(--text3)}
+.b-qualified{background:var(--blue-bg);color:var(--blue)}.b-qualified::before{background:var(--blue)}
+.b-sent{background:var(--amber-bg);color:var(--amber)}.b-sent::before{background:var(--amber)}
+.b-won{background:var(--green-bg);color:var(--green)}.b-won::before{background:var(--green)}
+.b-lost{background:var(--red-bg);color:var(--red)}.b-lost::before{background:var(--red)}
+.b-signed{background:var(--green-bg);color:var(--green)}.b-signed::before{background:var(--green)}
+.b-pending{background:var(--amber-bg);color:var(--amber)}.b-pending::before{background:var(--amber)}
+.b-introduced{background:var(--blue-bg);color:var(--blue)}.b-introduced::before{background:var(--blue)}
+.b-quoted{background:var(--purple-bg);color:var(--purple)}.b-quoted::before{background:var(--purple)}
+.avatar{width:22px;height:22px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:9px;font-weight:600;flex-shrink:0}
+.av-p{background:var(--purple-bg);color:var(--purple)}
+.av-t{background:var(--teal-bg);color:var(--teal)}
+.av-a{background:var(--amber-bg);color:var(--amber)}
+.av-b{background:var(--blue-bg);color:var(--blue)}
+.av-g{background:var(--green-bg);color:var(--green)}
+.av-r{background:var(--red-bg);color:var(--red)}
+.cell-av{display:flex;align-items:center;gap:8px}
+.chip{display:inline-flex;align-items:center;padding:2px 8px;background:var(--bg3);border-radius:20px;font-size:11px;color:var(--text2);border:1px solid var(--border)}
+.view-panel{display:none;flex-direction:column;height:100%;overflow:hidden}
+.view-panel.active{display:flex}
+.stats-bar{display:flex;border-bottom:1px solid var(--border);flex-shrink:0;overflow-x:auto}
+.stat-item{padding:12px 20px;border-right:1px solid var(--border);flex-shrink:0}
+.stat-num{font-size:20px;font-weight:600;color:var(--text)}
+.stat-num.g{color:var(--green)}
+.stat-lbl{font-size:11px;color:var(--text3);margin-top:1px}
+.kanban{display:flex;gap:12px;padding:16px 20px;overflow-x:auto;flex:1;align-items:flex-start}
+.k-col{width:255px;flex-shrink:0}
+.k-header{display:flex;align-items:center;justify-content:space-between;padding:4px 0 10px}
+.k-label{display:flex;align-items:center;gap:7px;font-size:12px;font-weight:500;color:var(--text2)}
+.k-dot{width:7px;height:7px;border-radius:50%}
+.k-count{font-size:11px;color:var(--text3);background:var(--bg3);padding:1px 6px;border-radius:10px}
+.kcard{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:12px;cursor:pointer;transition:border-color .15s;margin-bottom:8px}
+.kcard:hover{border-color:var(--border2)}
+.kcard-name{font-size:12px;font-weight:500;color:var(--text);margin-bottom:3px}
+.kcard-sub{font-size:11px;color:var(--text3);margin-bottom:8px}
+.kcard-val{font-size:13px;font-weight:600;color:var(--text)}
+.kcard-foot{display:flex;align-items:center;justify-content:space-between;margin-top:8px}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:100;align-items:center;justify-content:center}
+.modal-overlay.open{display:flex}
+.modal{background:var(--bg2);border:1px solid var(--border2);border-radius:12px;padding:24px;width:460px;max-width:95vw;max-height:90vh;overflow-y:auto}
+.modal h3{font-size:15px;font-weight:600;margin-bottom:16px;color:var(--text)}
+.field{margin-bottom:12px}
+.field label{display:block;font-size:11px;color:var(--text3);margin-bottom:5px;text-transform:uppercase;letter-spacing:.05em}
+.field input,.field select,.field textarea{width:100%;background:var(--bg3);border:1px solid var(--border2);border-radius:6px;padding:7px 10px;font-size:13px;color:var(--text);outline:none;font-family:inherit}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--purple)}
+.field select option{background:var(--bg3)}
+.field textarea{resize:vertical;min-height:70px}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+.modal-btns{display:flex;gap:8px;margin-top:16px}
+.detail-panel{display:none;position:fixed;top:0;right:0;bottom:0;width:380px;background:var(--bg2);border-left:1px solid var(--border);z-index:90;flex-direction:column}
+.detail-panel.open{display:flex}
+.detail-top{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--border);flex-shrink:0}
+.detail-name{font-size:16px;font-weight:600}
+.detail-body{padding:20px;overflow-y:auto;flex:1}
+.d-section{margin-bottom:20px}
+.d-label{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px}
+.d-row{display:flex;justify-content:space-between;align-items:flex-start;padding:7px 0;border-bottom:1px solid var(--border)}
+.d-row:last-child{border-bottom:none}
+.d-key{font-size:12px;color:var(--text3);flex-shrink:0}
+.d-val{font-size:12px;color:var(--text);font-weight:500;text-align:right;max-width:220px}
+.tab-bar{display:flex;padding:0 20px;border-bottom:1px solid var(--border);flex-shrink:0}
+.tab{padding:10px 14px;font-size:12px;color:var(--text3);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px}
+.tab:hover{color:var(--text2)}
+.tab.active{color:var(--text);border-bottom-color:var(--text)}
+.comm-foot{padding:12px 20px;border-top:1px solid var(--border);font-size:13px;color:var(--text);display:flex;justify-content:flex-end;gap:12px;flex-shrink:0}
+.comm-foot span{color:var(--green);font-weight:600;font-size:15px}
+
+/* Map */
+#map-container{position:relative;flex:1;background:var(--bg3)}
+#map{width:100%;height:100%}
+.map-overlay{position:absolute;top:12px;left:12px;z-index:10;display:flex;flex-direction:column;gap:8px}
+.map-card{background:var(--bg2);border:1px solid var(--border2);border-radius:var(--r);padding:10px 14px;min-width:200px}
+.map-card-title{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+.map-stat{font-size:20px;font-weight:600;color:var(--text)}
+.map-stat-lbl{font-size:11px;color:var(--text3)}
+.map-legend{background:var(--bg2);border:1px solid var(--border2);border-radius:var(--r);padding:10px 14px}
+.map-legend-item{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text2);margin-bottom:4px}
+.map-legend-item:last-child{margin-bottom:0}
+.map-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.geo-btn{display:inline-flex;align-items:center;gap:6px;padding:5px 12px;border-radius:var(--r);border:1px solid var(--border2);background:var(--bg2);color:var(--text2);cursor:pointer;font-size:12px;font-family:inherit}
+.geo-btn:hover{background:var(--bg3);color:var(--text)}
+
+/* Calculator */
+.calc-wrap{flex:1;overflow-y:auto;padding:20px}
+.calc-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;max-width:900px}
+.calc-card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:20px}
+.calc-card h3{font-size:14px;font-weight:500;color:var(--text);margin-bottom:16px;padding-bottom:10px;border-bottom:1px solid var(--border)}
+.calc-field{margin-bottom:14px}
+.calc-field label{display:block;font-size:11px;color:var(--text3);margin-bottom:6px;text-transform:uppercase;letter-spacing:.05em}
+.calc-field input,.calc-field select{width:100%;background:var(--bg3);border:1px solid var(--border2);border-radius:6px;padding:8px 10px;font-size:13px;color:var(--text);outline:none;font-family:inherit}
+.calc-field input:focus,.calc-field select:focus{border-color:var(--purple)}
+.calc-field select option{background:var(--bg3)}
+.calc-result{background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:14px}
+.calc-result-row{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--border)}
+.calc-result-row:last-child{border-bottom:none}
+.calc-result-key{font-size:12px;color:var(--text3)}
+.calc-result-val{font-size:13px;font-weight:600;color:var(--text)}
+.calc-result-val.highlight{color:var(--green);font-size:16px}
+.calc-result-val.amber{color:var(--amber)}
+.calc-result-val.blue{color:var(--blue)}
+.timeline-bar{margin-top:16px}
+.timeline-row{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.timeline-label{font-size:11px;color:var(--text3);width:100px;flex-shrink:0}
+.timeline-track{flex:1;background:var(--bg4);border-radius:4px;height:8px;overflow:hidden}
+.timeline-fill{height:100%;border-radius:4px;transition:width .4s}
+.timeline-val{font-size:11px;color:var(--text2);width:50px;text-align:right;flex-shrink:0}
+.full-width-card{grid-column:1/-1}
+.calc-summary-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:16px}
+.calc-summary-item{background:var(--bg4);border-radius:8px;padding:12px;text-align:center}
+.calc-summary-num{font-size:18px;font-weight:600;color:var(--text);margin-bottom:2px}
+.calc-summary-lbl{font-size:11px;color:var(--text3)}
+
+/* AI Agent */
+.ai-panel{display:none;position:fixed;top:0;right:0;bottom:0;width:400px;background:var(--bg2);border-left:1px solid var(--border);z-index:95;flex-direction:column}
+.ai-panel.open{display:flex}
+.ai-top{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--border);flex-shrink:0}
+.ai-title{font-size:14px;font-weight:600;color:var(--purple)}
+.ai-messages{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:12px}
+.ai-msg{max-width:92%;padding:10px 13px;border-radius:10px;font-size:13px;line-height:1.6}
+.ai-msg.user{background:var(--purple-bg);color:var(--purple);align-self:flex-end;border-bottom-right-radius:3px}
+.ai-msg.assistant{background:var(--bg3);color:var(--text2);align-self:flex-start;border-bottom-left-radius:3px;border:1px solid var(--border)}
+.ai-msg.assistant b{color:var(--text)}
+.ai-input-row{padding:12px 16px;border-top:1px solid var(--border);display:flex;gap:8px;flex-shrink:0}
+.ai-input{flex:1;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:8px 12px;font-size:13px;color:var(--text);outline:none;font-family:inherit}
+.ai-input:focus{border-color:var(--purple)}
+.ai-send{background:var(--purple-bg);border:1px solid var(--purple-bg);color:var(--purple);border-radius:8px;padding:8px 14px;cursor:pointer;font-size:13px;font-family:inherit}
+.ai-send:hover{background:#3a2f55}
+.loading-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:200;align-items:center;justify-content:center;flex-direction:column;gap:16px}
+.loading-overlay.open{display:flex}
+.spinner{width:32px;height:32px;border:2px solid var(--border2);border-top-color:var(--purple);border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-text{color:var(--text2);font-size:14px}
+.empty-state{padding:40px 20px;text-align:center;color:var(--text3);font-size:13px}
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
+</style>
+</head>
+<body>
+
+<div class="loading-overlay" id="loading">
+  <div class="spinner"></div>
+  <div class="loading-text" id="loading-text">Setting up BuildFlow CRM...</div>
+</div>
+
+<!-- Sidebar -->
+<aside class="sidebar">
+  <div class="logo-row">
+    <div class="logo-icon">
+      <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1L14 4.5V11.5L8 15L2 11.5V4.5L8 1Z"/></svg>
+    </div>
+    <span class="logo-name">BuildFlow</span>
+  </div>
+  <div class="nav-section">
+    <div class="nav-label">Workspace</div>
+    <div class="nav-item active" onclick="showView('leads')">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="5" r="3"/><path d="M2 14c0-3.3 2.7-6 6-6s6 2.7 6 6"/></svg>
+      <span>Leads</span><span class="nav-count" id="nc-leads">—</span>
+    </div>
+    <div class="nav-item" onclick="showView('builders')">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="8" width="14" height="7" rx="1"/><path d="M3 8V6a5 5 0 0110 0v2"/></svg>
+      <span>Builders</span><span class="nav-count" id="nc-builders">—</span>
+    </div>
+    <div class="nav-item" onclick="showView('jobs')">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="3" width="12" height="11" rx="1"/><path d="M5 3V2M11 3V2M2 7h12"/></svg>
+      <span>Jobs</span><span class="nav-count" id="nc-jobs">—</span>
+    </div>
+    <div class="nav-item" onclick="showView('pipeline')">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="4" width="3" height="9" rx="1"/><rect x="6" y="2" width="3" height="11" rx="1"/><rect x="11" y="6" width="3" height="7" rx="1"/></svg>
+      <span>Pipeline</span>
+    </div>
+    <div class="nav-item" onclick="showView('map')">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 1C5.8 1 4 2.8 4 5c0 3.5 4 9 4 9s4-5.5 4-9c0-2.2-1.8-4-4-4z"/><circle cx="8" cy="5" r="1.5"/></svg>
+      <span>Projects map</span>
+    </div>
+    <div class="nav-item" onclick="showView('commissions')">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6"/><path d="M8 5v1.5M8 9.5V11M6.5 7a1.5 1.5 0 013 0c0 1-1.5 1.5-1.5 2.5"/></svg>
+      <span>Commissions</span>
+    </div>
+    <div class="nav-item" onclick="showView('calculator')">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="2" width="12" height="12" rx="2"/><path d="M5 5h2M9 5h2M5 8h2M9 8h2M5 11h2M9 11h2"/></svg>
+      <span>Calculator</span>
+    </div>
+    <div class="nav-item" onclick="showView('followups')">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 8l3 3 7-6"/></svg>
+      <span>Follow-ups</span>
+    </div>
+  </div>
+  <div class="sidebar-bottom">
+    <div class="nav-item btn-ai" style="border-radius:6px;color:var(--purple)" onclick="toggleAI()">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6"/><path d="M5.5 8h5M8 5.5v5"/></svg>
+      <span>Claude Agent</span>
+    </div>
+  </div>
+</aside>
+
+<!-- Main -->
+<div class="main">
+
+  <!-- LEADS -->
+  <div class="view-panel active" id="view-leads">
+    <div class="topbar">
+      <span class="topbar-title">Leads</span>
+      <div class="topbar-actions">
+        <button class="btn btn-primary" onclick="openModal('lead')">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3v10M3 8h10"/></svg>New lead
+        </button>
+      </div>
+    </div>
+    <div class="stats-bar" id="leads-stats"></div>
+    <div class="filter-bar">
+      <button class="filter-pill">Filter</button>
+      <button class="filter-pill">Sort</button>
+      <span class="filter-count" id="leads-count"></span>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr>
+          <th class="cb-col"><input type="checkbox"></th>
+          <th>Name</th><th>Job type</th><th>Budget</th><th>Area</th><th>Source</th><th>Status</th><th>Phone</th>
+        </tr></thead>
+        <tbody id="leads-body"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- BUILDERS -->
+  <div class="view-panel" id="view-builders">
+    <div class="topbar">
+      <span class="topbar-title">Builder partners</span>
+      <div class="topbar-actions">
+        <button class="btn btn-primary" onclick="openModal('builder')">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3v10M3 8h10"/></svg>New builder
+        </button>
+      </div>
+    </div>
+    <div class="filter-bar">
+      <button class="filter-pill">Filter</button>
+      <span class="filter-count" id="builders-count"></span>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr>
+          <th class="cb-col"><input type="checkbox"></th>
+          <th>Company</th><th>Contact</th><th>Specialisms</th><th>Areas</th><th>Commission</th><th>Contract</th><th>Phone</th>
+        </tr></thead>
+        <tbody id="builders-body"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- JOBS -->
+  <div class="view-panel" id="view-jobs">
+    <div class="topbar">
+      <span class="topbar-title">Jobs</span>
+      <div class="topbar-actions">
+        <button class="btn btn-primary" onclick="openModal('job')">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3v10M3 8h10"/></svg>Log job
+        </button>
+      </div>
+    </div>
+    <div class="filter-bar">
+      <button class="filter-pill">All jobs</button>
+      <button class="filter-pill">Won only</button>
+      <span class="filter-count" id="jobs-count"></span>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr>
+          <th class="cb-col"><input type="checkbox"></th>
+          <th>Lead</th><th>Builder</th><th>Job type</th><th>Quote value</th><th>Commission</th><th>Outcome</th><th>Date</th>
+        </tr></thead>
+        <tbody id="jobs-body"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- PIPELINE -->
+  <div class="view-panel" id="view-pipeline">
+    <div class="topbar">
+      <span class="topbar-title">Pipeline</span>
+      <div class="topbar-actions">
+        <button class="btn btn-primary" onclick="openModal('lead')">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3v10M3 8h10"/></svg>New lead
+        </button>
+      </div>
+    </div>
+    <div class="kanban" id="kanban"></div>
+  </div>
+
+  <!-- MAP -->
+  <div class="view-panel" id="view-map">
+    <div class="topbar">
+      <span class="topbar-title">Projects map</span>
+      <div class="topbar-actions">
+        <button class="geo-btn" onclick="locateMe()">
+          <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="3"/><path d="M8 1v2M8 13v2M1 8h2M13 8h2"/></svg>
+          Use my location
+        </button>
+        <button class="btn btn-primary" onclick="openModal('lead')">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3v10M3 8h10"/></svg>Add project
+        </button>
+      </div>
+    </div>
+    <div id="map-container">
+      <div id="map"></div>
+      <div class="map-overlay">
+        <div class="map-card">
+          <div class="map-card-title">South Wales projects</div>
+          <div class="map-stat" id="map-total-projects">—</div>
+          <div class="map-stat-lbl">active projects</div>
+        </div>
+        <div class="map-card">
+          <div class="map-card-title">Pipeline value</div>
+          <div class="map-stat g" id="map-pipeline-val">—</div>
+          <div class="map-stat-lbl">estimated</div>
+        </div>
+        <div class="map-legend">
+          <div class="map-card-title">Status</div>
+          <div class="map-legend-item"><div class="map-dot" style="background:#4a9edd"></div>Qualified</div>
+          <div class="map-legend-item"><div class="map-dot" style="background:#d4a030"></div>Sent to builder</div>
+          <div class="map-legend-item"><div class="map-dot" style="background:#5fb96a"></div>Won</div>
+          <div class="map-legend-item"><div class="map-dot" style="background:#9e9c96"></div>New</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- COMMISSIONS -->
+  <div class="view-panel" id="view-commissions">
+    <div class="topbar"><span class="topbar-title">Commission tracker</span></div>
+    <div class="filter-bar"><span class="filter-count" id="comm-count"></span></div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr>
+          <th>Lead</th><th>Builder</th><th>Job type</th><th>Quote value</th><th>Rate</th><th>Commission owed</th><th>Date</th>
+        </tr></thead>
+        <tbody id="comm-body"></tbody>
+      </table>
+    </div>
+    <div class="comm-foot" id="comm-foot"></div>
+  </div>
+
+  <!-- CALCULATOR -->
+  <div class="view-panel" id="view-calculator">
+    <div class="topbar"><span class="topbar-title">Project calculator</span></div>
+    <div class="calc-wrap">
+      <div class="calc-grid">
+
+        <!-- Inputs -->
+        <div class="calc-card">
+          <h3>Project details</h3>
+          <div class="calc-field">
+            <label>Job type</label>
+            <select id="c-jobtype" onchange="calcUpdate()">
+              <option value="basement">Basement conversion</option>
+              <option value="loft">Loft conversion</option>
+              <option value="extension">Extension</option>
+              <option value="refurb">Full refurbishment</option>
+              <option value="kitchen">Kitchen remodel</option>
+              <option value="newbuild">New build</option>
+            </select>
+          </div>
+          <div class="calc-field">
+            <label>Estimated project value (£)</label>
+            <input type="number" id="c-value" value="85000" oninput="calcUpdate()">
+          </div>
+          <div class="calc-field">
+            <label>Your commission rate (%)</label>
+            <input type="number" id="c-rate" value="10" min="1" max="25" oninput="calcUpdate()">
+          </div>
+          <div class="calc-field">
+            <label>Property location</label>
+            <select id="c-location" onchange="calcUpdate()">
+              <option value="cardiff">Cardiff</option>
+              <option value="swansea">Swansea</option>
+              <option value="newport">Newport</option>
+              <option value="bridgend">Bridgend</option>
+              <option value="pontypridd">Pontypridd / RCT</option>
+              <option value="merthyr">Merthyr Tydfil</option>
+              <option value="barry">Barry / Vale of Glamorgan</option>
+              <option value="penarth">Penarth</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Revenue results -->
+        <div class="calc-card">
+          <h3>Revenue share breakdown</h3>
+          <div class="calc-result" id="calc-revenue-result"></div>
+        </div>
+
+        <!-- Timeline -->
+        <div class="calc-card">
+          <h3>Project timeline estimate</h3>
+          <div class="calc-result" id="calc-timeline-result"></div>
+          <div class="timeline-bar" id="calc-timeline-bar"></div>
+        </div>
+
+        <!-- Market context -->
+        <div class="calc-card">
+          <h3>South Wales market context</h3>
+          <div class="calc-result" id="calc-market-result"></div>
+        </div>
+
+        <!-- Summary -->
+        <div class="calc-card full-width-card">
+          <h3>Annual projection — if you close this type of job monthly</h3>
+          <div class="calc-summary-grid" id="calc-annual-summary"></div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- FOLLOW-UPS -->
+  <div class="view-panel" id="view-followups">
+    <div class="topbar"><span class="topbar-title">Follow-ups</span></div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr>
+          <th>Task</th><th>Lead</th><th>Due date</th><th>Done</th>
+        </tr></thead>
+        <tbody id="followups-body"></tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<!-- Detail panel -->
+<div class="detail-panel" id="detail-panel">
+  <div class="detail-top">
+    <span class="detail-name" id="detail-name">—</span>
+    <button class="btn" onclick="closeDetail()">✕</button>
+  </div>
+  <div class="tab-bar">
+    <div class="tab active">Overview</div>
+    <div class="tab">Notes</div>
+  </div>
+  <div class="detail-body" id="detail-body"></div>
+</div>
+
+<!-- AI Agent -->
+<div class="ai-panel" id="ai-panel">
+  <div class="ai-top">
+    <div>
+      <div class="ai-title">Claude Agent</div>
+      <div style="font-size:11px;color:var(--text3);margin-top:2px">Your construction broker assistant</div>
+    </div>
+    <button class="btn" onclick="toggleAI()">✕</button>
+  </div>
+  <div class="ai-messages" id="ai-messages">
+    <div class="ai-msg assistant">
+      Hi! I'm your BuildFlow agent — works offline, no API needed.u003cbru003eu003cbru003e
+      u003cbu003e· Add leadsu003c/bu003e — "Add a lead: John Smith, extension, Cardiff, £50k–100k"u003cbru003e
+      u003cbu003e· Find buildersu003c/bu003e — "Builders in Swansea"u003cbru003e
+      u003cbu003e· Pipelineu003c/bu003e — "Pipeline overview"u003cbru003e
+      u003cbu003e· Commissionu003c/bu003e — "Commission summary"u003cbru003e
+      u003cbu003e· Updateu003c/bu003e — "Mark Gareth Williams as won"u003cbru003eu003cbru003e
+      Type u003cbu003ehelpu003c/bu003e for all commands.
+    </div>
+  </div>
+  <div class="ai-input-row">
+    <input class="ai-input" id="ai-input" placeholder="Ask anything or give a command..." onkeydown="if(event.key==='Enter')sendAI()">
+    <button class="ai-send" onclick="sendAI()">Send</button>
+  </div>
+</div>
+
+<!-- Lead Modal -->
+<div class="modal-overlay" id="modal-lead">
+  <div class="modal">
+    <h3>New lead</h3>
+    <div class="g2">
+      <div class="field"><label>Name</label><input id="l-name" placeholder="Gareth Williams"></div>
+      <div class="field"><label>Phone</label><input id="l-phone" placeholder="07700 900000"></div>
+    </div>
+    <div class="g2">
+      <div class="field"><label>Job type</label>
+        <select id="l-job"><option>Basement conversion</option><option>Loft conversion</option><option>Extension</option><option>Full refurb</option><option>Kitchen remodel</option><option>New build</option></select>
+      </div>
+      <div class="field"><label>Budget</label>
+        <select id="l-budget"><option>Under £20k</option><option>£20k–50k</option><option>£50k–100k</option><option>£100k+</option></select>
+      </div>
+    </div>
+    <div class="g2">
+      <div class="field"><label>Area / postcode</label><input id="l-postcode" placeholder="CF10 1AA or Cardiff"></div>
+      <div class="field"><label>Source</label>
+        <select id="l-source"><option>Google Ads</option><option>Facebook</option><option>Organic search</option><option>Referral</option><option>Nextdoor</option></select>
+      </div>
+    </div>
+    <div class="field"><label>Notes</label><textarea id="l-notes" placeholder="Any additional details..."></textarea></div>
+    <div class="modal-btns">
+      <button class="btn btn-primary" onclick="saveLead()">Save lead</button>
+      <button class="btn" onclick="closeModal('lead')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Builder Modal -->
+<div class="modal-overlay" id="modal-builder">
+  <div class="modal">
+    <h3>New builder partner</h3>
+    <div class="g2">
+      <div class="field"><label>Company</label><input id="b-company" placeholder="Jones Build Ltd"></div>
+      <div class="field"><label>Contact name</label><input id="b-contact" placeholder="Dai Jones"></div>
+    </div>
+    <div class="g2">
+      <div class="field"><label>Phone</label><input id="b-phone" placeholder="07700 900000"></div>
+      <div class="field"><label>Commission %</label><input id="b-comm" type="number" placeholder="10" min="1" max="30"></div>
+    </div>
+    <div class="g2">
+      <div class="field"><label>Specialisms</label><input id="b-spec" placeholder="Basements, extensions"></div>
+      <div class="field"><label>Areas covered</label><input id="b-postcodes" placeholder="Cardiff, Swansea, Newport"></div>
+    </div>
+    <div class="modal-btns">
+      <button class="btn btn-primary" onclick="saveBuilder()">Save builder</button>
+      <button class="btn" onclick="closeModal('builder')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Job Modal -->
+<div class="modal-overlay" id="modal-job">
+  <div class="modal">
+    <h3>Log job introduction</h3>
+    <div class="field"><label>Lead</label><select id="j-lead"></select></div>
+    <div class="field"><label>Builder</label><select id="j-builder"></select></div>
+    <div class="g2">
+      <div class="field"><label>Quote value (£)</label><input id="j-quote" type="number" placeholder="45000"></div>
+      <div class="field"><label>Outcome</label>
+        <select id="j-outcome"><option>Introduced</option><option>Quoted</option><option>Won</option><option>Lost</option></select>
+      </div>
+    </div>
+    <div class="modal-btns">
+      <button class="btn btn-primary" onclick="saveJob()">Save job</button>
+      <button class="btn" onclick="closeModal('job')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Leaflet map -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<script>
+const TOKEN='patfMPyfwpYTrkZPA.663537c8a62ef367292ef785b6f7ffeb91052c233d800c7d6c52cc47c73b292f';
+const BASE_ID='appft0wJBqbIFG41I';
+const API='https://api.airtable.com/v0';
+
+let leads=[],builders=[],jobs=[],followups=[];
+let mapInstance=null, mapMarkers=[];
+
+// South Wales leads with real coordinates
+const SW_LEADS=[
+  {Name:'Gareth Williams',Phone:'07700 933001','Job Type':'Extension',Budget:'£50k–100k',Postcode:'CF10 1AF',Source:'Google Ads',Status:'Qualified',Notes:'Rear kitchen extension, Victorian terrace in Roath',lat:51.4837,lng:-3.1681},
+  {Name:'Sian Hughes',Phone:'07700 933002','Job Type':'Loft conversion',Budget:'£50k–100k',Postcode:'CF24 3NN',Source:'Facebook',Status:'New',Notes:'Dormer loft, semi-detached in Cardiff',lat:51.4927,lng:-3.1534},
+  {Name:'Dylan Morgan',Phone:'07700 933003','Job Type':'Full refurb',Budget:'£100k+',Postcode:'SA1 1AE',Source:'Referral',Status:'Won',Notes:'Period property full renovation in Swansea city centre',lat:51.6214,lng:-3.9436},
+  {Name:'Rhian Davies',Phone:'07700 933004','Job Type':'Basement conversion',Budget:'£100k+',Postcode:'CF64 1AB',Source:'Google Ads',Status:'Sent to builder',Notes:'Cellar conversion to habitable space, Penarth',lat:51.4344,lng:-3.1688},
+  {Name:'Huw Thomas',Phone:'07700 933005','Job Type':'Extension',Budget:'£20k–50k',Postcode:'NP20 1AB',Source:'Organic search',Status:'Qualified',Notes:'Single storey utility room extension, Newport',lat:51.5842,lng:-2.9977},
+  {Name:'Cerys Evans',Phone:'07700 933006','Job Type':'Kitchen remodel',Budget:'£20k–50k',Postcode:'CF31 1AB',Source:'Nextdoor',Status:'New',Notes:'Open plan kitchen diner, modern finish, Bridgend',lat:51.5042,lng:-3.5780},
+  {Name:'Owen Jenkins',Phone:'07700 933007','Job Type':'New build',Budget:'£100k+',Postcode:'CF37 1AB',Source:'Referral',Status:'Sent to builder',Notes:'Plot in Pontypridd, 3 bed detached new build',lat:51.6017,lng:-3.3429},
+  {Name:'Lowri Price',Phone:'07700 933008','Job Type':'Loft conversion',Budget:'£50k–100k',Postcode:'CF47 0AB',Source:'Google Ads',Status:'Qualified',Notes:'Hip to gable loft in Merthyr, good access',lat:51.7441,lng:-3.3780},
+  {Name:'Ieuan Roberts',Phone:'07700 933009','Job Type':'Full refurb',Budget:'£100k+',Postcode:'SA2 0AB',Source:'Facebook',Status:'Won',Notes:'4-bed semi full gut, Sketty, Swansea',lat:51.6156,lng:-3.9987},
+  {Name:'Bethan Jones',Phone:'07700 933010','Job Type':'Extension',Budget:'£50k–100k',Postcode:'CF5 1AB',Source:'Google Ads',Status:'New',Notes:'Double storey extension, Canton Cardiff',lat:51.4818,lng:-3.2101},
+  {Name:'Alun Griffiths',Phone:'07700 933011','Job Type':'Basement conversion',Budget:'£100k+',Postcode:'CF14 1AB',Source:'Referral',Status:'Qualified',Notes:'Full basement dig-out, Heath Cardiff',lat:51.5149,lng:-3.1875},
+  {Name:'Nia Phillips',Phone:'07700 933012','Job Type':'Kitchen remodel',Budget:'£20k–50k',Postcode:'SA3 1AB',Source:'Facebook',Status:'Lost',Notes:'Budget didn\'t stretch, Mumbles Swansea',lat:51.5731,lng:-3.9788},
+];
+
+// South Wales builders
+const SW_BUILDERS=[
+  {Company:'Cardiff Build Co',Contact:'Dai Lewis',Phone:'02920 100001',Specialisms:'Extensions, refurbs',Postcodes:'Cardiff, Vale of Glamorgan',Commission:10,Contract:'Signed'},
+  {Company:'Swansea Renovations Ltd',Contact:'Bryn Owen',Phone:'01792 200001',Specialisms:'Full refurbs, loft conversions',Postcodes:'Swansea, Neath',Commission:9,Contract:'Signed'},
+  {Company:'Newport Contractors',Contact:'Mal Thomas',Phone:'01633 300001',Specialisms:'Extensions, new builds',Postcodes:'Newport, Cwmbran, Pontypool',Commission:11,Contract:'Signed'},
+  {Company:'South Wales Groundworks',Contact:'Glyn Evans',Phone:'07700 944001',Specialisms:'Basements, groundworks',Postcodes:'Cardiff, Barry, Penarth',Commission:12,Contract:'Signed'},
+  {Company:'Valleys Build',Contact:'Rhys Williams',Phone:'07700 944002',Specialisms:'Extensions, kitchen remodels',Postcodes:'Pontypridd, Merthyr, RCT',Commission:10,Contract:'Pending'},
+  {Company:'Coastal Homes Wales',Contact:'Aled Hughes',Phone:'07700 944003',Specialisms:'New builds, full refurbs',Postcodes:'Swansea, Bridgend, Porthcawl',Commission:8,Contract:'Pending'},
+];
+
+// South Wales jobs
+const SW_JOBS=[
+  {'Lead Name':'Dylan Morgan','Builder Name':'Swansea Renovations Ltd','Job Type':'Full refurb','Quote Value':165000,Outcome:'Won','Commission Rate':9,Date:'2025-04-05'},
+  {'Lead Name':'Rhian Davies','Builder Name':'South Wales Groundworks','Job Type':'Basement conversion','Quote Value':95000,Outcome:'Quoted','Commission Rate':12,Date:'2025-04-12'},
+  {'Lead Name':'Owen Jenkins','Builder Name':'Valleys Build','Job Type':'New build','Quote Value':245000,Outcome:'Introduced','Commission Rate':10,Date:'2025-04-18'},
+  {'Lead Name':'Ieuan Roberts','Builder Name':'Swansea Renovations Ltd','Job Type':'Full refurb','Quote Value':148000,Outcome:'Won','Commission Rate':9,Date:'2025-04-22'},
+  {'Lead Name':'Gareth Williams','Builder Name':'Cardiff Build Co','Job Type':'Extension','Quote Value':58000,Outcome:'Quoted','Commission Rate':10,Date:'2025-04-25'},
+  {'Lead Name':'Alun Griffiths','Builder Name':'South Wales Groundworks','Job Type':'Basement conversion','Quote Value':112000,Outcome:'Introduced','Commission Rate':12,Date:'2025-04-28'},
+];
+
+const SW_FOLLOWUPS=[
+  {Task:'Chase quote from Swansea Renovations','Lead Name':'Rhian Davies','Due Date':'2025-05-26',Done:false},
+  {Task:'Send non-circumvention agreement','Lead Name':'Owen Jenkins','Due Date':'2025-05-27',Done:false},
+  {Task:'Confirm commission invoice £14,850','Lead Name':'Dylan Morgan','Due Date':'2025-05-28',Done:true},
+  {Task:'Follow up on extension interest','Lead Name':'Bethan Jones','Due Date':'2025-06-01',Done:false},
+  {Task:'Book site visit with builder','Lead Name':'Alun Griffiths','Due Date':'2025-05-30',Done:false},
+];
+
+// Calculator data
+const JOB_TYPES={
+  basement:{label:'Basement conversion',avgWeeks:16,planWeeks:6,buildWeeks:14,finishWeeks:3,avgValue:95000,marketNote:'High demand in Cardiff & Penarth. Planning rarely required. Strong ROI for homeowners.'},
+  loft:{label:'Loft conversion',avgWeeks:10,planWeeks:4,buildWeeks:8,finishWeeks:2,avgValue:62000,marketNote:'Most popular job type in South Wales valleys. Dormer style most common.'},
+  extension:{label:'Extension',avgWeeks:12,planWeeks:8,buildWeeks:10,finishWeeks:2,avgValue:55000,marketNote:'Steady demand across all South Wales areas. Planning approval 8-12 weeks typical.'},
+  refurb:{label:'Full refurbishment',avgWeeks:20,planWeeks:2,buildWeeks:18,finishWeeks:3,avgValue:140000,marketNote:'High value, strong commission. Period properties in Penarth & Pontcanna popular.'},
+  kitchen:{label:'Kitchen remodel',avgWeeks:6,planWeeks:1,buildWeeks:4,finishWeeks:1,avgValue:28000,marketNote:'Quick turnaround. Good for cashflow between larger jobs.'},
+  newbuild:{label:'New build',avgWeeks:52,planWeeks:20,buildWeeks:44,finishWeeks:6,avgValue:260000,marketNote:'Highest commission per job. Valley plots popular. Longer cycle, plan pipeline carefully.'},
+};
+const LOCATION_MULT={cardiff:1.0,swansea:0.92,newport:0.88,bridgend:0.85,pontypridd:0.82,merthyr:0.78,barry:0.95,penarth:1.05};
+
+const COLORS=['av-p','av-t','av-a','av-b','av-g','av-r'];
+function av(name){let h=0;for(let c of(name||'?'))h=(h*31+c.charCodeAt(0))&0xffff;return COLORS[h%COLORS.length];}
+function initials(name){return(name||'?').split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);}
+function fmt(n){return'£'+Math.round(n||0).toLocaleString('en-GB');}
+function dateStr(d){if(!d)return'—';try{return new Date(d).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'2-digit'});}catch{return'—';}}
+function badge(s){const m={'New':'b-new','Qualified':'b-qualified','Sent to builder':'b-sent','Won':'b-won','Lost':'b-lost','Signed':'b-signed','Pending':'b-pending','Introduced':'b-introduced','Quoted':'b-quoted'};return`<span class="badge ${m[s]||'b-new'}">${s||'New'}</span>`;}
+function avEl(name){return`<div class="avatar ${av(name)}">${initials(name)}</div>`;}
+
+async function atFetch(path,opts={}){
+  const r=await fetch(`${API}/${BASE_ID}/${path}`,{headers:{'Authorization':`Bearer ${TOKEN}`,'Content-Type':'application/json'},...opts});
+  return r.json();
+}
+async function getAllRecords(table){
+  let records=[],offset=null;
+  do{
+    const d=await atFetch(offset?`${table}?offset=${offset}`:table);
+    if(d.error){return[];}
+    records=records.concat(d.records||[]);
+    offset=d.offset||null;
+  }while(offset);
+  return records;
+}
+async function createRecord(table,fields){return atFetch(table,{method:'POST',body:JSON.stringify({fields,typecast:true})});}
+async function updateRecord(table,id,fields){return atFetch(`${table}/${id}`,{method:'PATCH',body:JSON.stringify({fields,typecast:true})});}
+
+async function setup(){
+  showLoading('Connecting to Airtable...');
+  try {
+    const testRes = await fetch(`${API}/${BASE_ID}/Leads?maxRecords=1`,{headers:{'Authorization':`Bearer ${TOKEN}`}});
+    const testData = await testRes.json();
+    if(testData.error){
+      const msg = testData.error.message||JSON.stringify(testData.error);
+      showLoading('Airtable error: '+msg);
+      console.error('Airtable error:',testData);
+      return;
+    }
+    await loadAllData();
+  } catch(e) {
+    showLoading('Connection failed: '+e.message+'. Check you are online.');
+    console.error(e);
+  }
+}
+
+async function seedIfEmpty(){
+  // Only seed if tables are completely empty
+  if(leads.length===0){
+    showLoading('Seeding South Wales leads...');
+    for(const f of SW_LEADS){const {lat,lng,...fields}=f; await createRecord('Leads',fields);}
+  }
+  if(builders.length===0){
+    showLoading('Seeding builders...');
+    for(const f of SW_BUILDERS) await createRecord('Builders',f);
+  }
+  if(jobs.length===0){
+    showLoading('Seeding jobs...');
+    for(const f of SW_JOBS) await createRecord('Jobs',f);
+  }
+  if(followups.length===0){
+    showLoading('Seeding follow-ups...');
+    for(const f of SW_FOLLOWUPS) await createRecord('Follow-ups',f);
+  }
+  // Reload after seeding
+  const needsReload = leads.length===0||builders.length===0||jobs.length===0||followups.length===0;
+  if(needsReload) await loadAllData();
+}
+
+async function loadAllData(){
+  showLoading('Loading data...');
+  const [lr,br,jr,fr]=await Promise.all([
+    getAllRecords('Leads'),
+    getAllRecords('Builders'),
+    getAllRecords('Jobs'),
+    getAllRecords('Follow-ups')
+  ]);
+  leads=lr.map(r=>({id:r.id,...r.fields}));
+  builders=br.map(r=>({id:r.id,...r.fields}));
+  jobs=jr.map(r=>({id:r.id,...r.fields}));
+  followups=fr.map(r=>({id:r.id,...r.fields}));
+  // Seed demo data if tables are empty
+  const wasEmpty=leads.length===0||builders.length===0;
+  if(wasEmpty){
+    await seedIfEmpty();
+    return; // seedIfEmpty calls loadAllData again after seeding
+  }
+  hideLoading();
+  renderAll();
+  initMap();
+}
+
+function showLoading(msg){document.getElementById('loading').classList.add('open');document.getElementById('loading-text').textContent=msg||'Loading...';}
+function hideLoading(){document.getElementById('loading').classList.remove('open');}
+
+function renderLeads(){
+  const tb=document.getElementById('leads-body');
+  if(!leads.length){tb.innerHTML=`<tr><td colspan="8" class="empty-state">No leads yet</td></tr>`;return;}
+  tb.innerHTML=leads.map(l=>`<tr onclick="openDetail('lead','${l.id}')">
+    <td class="cb-col"><input type="checkbox" onclick="event.stopPropagation()"></td>
+    <td class="primary"><div class="cell-av">${avEl(l.Name)}<span>${l.Name||'—'}</span></div></td>
+    <td>${l['Job Type']||'—'}</td><td>${l.Budget||'—'}</td>
+    <td><span class="chip">${l.Postcode||'—'}</span></td>
+    <td><span class="chip">${l.Source||'—'}</span></td>
+    <td>${badge(l.Status)}</td>
+    <td style="color:var(--text3)">${l.Phone||'—'}</td>
+  </tr>`).join('');
+  document.getElementById('leads-count').textContent=leads.length+' leads';
+  document.getElementById('nc-leads').textContent=leads.length;
+  const won=jobs.filter(j=>j.Outcome==='Won');
+  const totalComm=won.reduce((s,j)=>s+Math.round((j['Quote Value']||0)*((j['Commission Rate']||0)/100)),0);
+  const pipe=leads.filter(l=>!['Won','Lost'].includes(l.Status)).length;
+  document.getElementById('leads-stats').innerHTML=`
+    <div class="stat-item"><div class="stat-num">${leads.length}</div><div class="stat-lbl">Total leads</div></div>
+    <div class="stat-item"><div class="stat-num">${pipe}</div><div class="stat-lbl">In pipeline</div></div>
+    <div class="stat-item"><div class="stat-num">${won.length}</div><div class="stat-lbl">Jobs won</div></div>
+    <div class="stat-item"><div class="stat-num g">${fmt(totalComm)}</div><div class="stat-lbl">Commission earned</div></div>
+    <div class="stat-item"><div class="stat-num">${builders.filter(b=>b.Contract==='Signed').length}</div><div class="stat-lbl">Active builders</div></div>`;
+}
+
+function renderBuilders(){
+  const tb=document.getElementById('builders-body');
+  if(!builders.length){tb.innerHTML=`<tr><td colspan="8" class="empty-state">No builders yet</td></tr>`;return;}
+  tb.innerHTML=builders.map(b=>`<tr>
+    <td class="cb-col"><input type="checkbox" onclick="event.stopPropagation()"></td>
+    <td class="primary"><div class="cell-av">${avEl(b.Company)}<span>${b.Company||'—'}</span></div></td>
+    <td><div class="cell-av">${avEl(b.Contact)}<span>${b.Contact||'—'}</span></div></td>
+    <td style="color:var(--text3)">${b.Specialisms||'—'}</td>
+    <td style="color:var(--text3)">${b.Postcodes||'—'}</td>
+    <td style="color:var(--amber)">${b.Commission||0}%</td>
+    <td>${badge(b.Contract)}</td>
+    <td style="color:var(--text3)">${b.Phone||'—'}</td>
+  </tr>`).join('');
+  document.getElementById('builders-count').textContent=builders.length+' builders';
+  document.getElementById('nc-builders').textContent=builders.length;
+}
+
+function renderJobs(){
+  const tb=document.getElementById('jobs-body');
+  if(!jobs.length){tb.innerHTML=`<tr><td colspan="8" class="empty-state">No jobs yet</td></tr>`;return;}
+  tb.innerHTML=jobs.map(j=>{
+    const comm=j.Outcome==='Won'?Math.round((j['Quote Value']||0)*((j['Commission Rate']||0)/100)):0;
+    return`<tr>
+      <td class="cb-col"><input type="checkbox" onclick="event.stopPropagation()"></td>
+      <td class="primary"><div class="cell-av">${avEl(j['Lead Name'])}<span>${j['Lead Name']||'—'}</span></div></td>
+      <td><div class="cell-av">${avEl(j['Builder Name'])}<span>${j['Builder Name']||'—'}</span></div></td>
+      <td style="color:var(--text3)">${j['Job Type']||'—'}</td>
+      <td style="font-weight:500">${j['Quote Value']?fmt(j['Quote Value']):'—'}</td>
+      <td style="color:${j.Outcome==='Won'?'var(--green)':'var(--text3)'};font-weight:500">${j.Outcome==='Won'&&j['Quote Value']?fmt(comm):'—'}</td>
+      <td>${badge(j.Outcome)}</td>
+      <td style="color:var(--text3)">${dateStr(j.Date)}</td>
+    </tr>`;
+  }).join('');
+  document.getElementById('jobs-count').textContent=jobs.length+' jobs';
+  document.getElementById('nc-jobs').textContent=jobs.length;
+}
+
+function renderPipeline(){
+  const cols=[{key:'New',color:'#5c5b57'},{key:'Qualified',color:'var(--blue)'},{key:'Sent to builder',color:'var(--amber)'},{key:'Won',color:'var(--green)'},{key:'Lost',color:'var(--red)'}];
+  const budgetEst={'Under £20k':20000,'£20k–50k':35000,'£50k–100k':75000,'£100k+':150000};
+  document.getElementById('kanban').innerHTML=cols.map(col=>{
+    const items=leads.filter(l=>l.Status===col.key);
+    const total=items.reduce((s,l)=>s+(budgetEst[l.Budget]||0),0);
+    return`<div class="k-col">
+      <div class="k-header"><div class="k-label"><span class="k-dot" style="background:${col.color}"></span>${col.key}</div><span class="k-count">${items.length}</span></div>
+      ${total?`<div style="font-size:11px;color:var(--text3);margin-bottom:8px">Est. ${fmt(total)}</div>`:''}
+      ${items.map(l=>`<div class="kcard" onclick="openDetail('lead','${l.id}')">
+        <div class="kcard-name">${l.Name||'—'}</div>
+        <div class="kcard-sub">${l['Job Type']||'—'} · ${l.Postcode||'—'}</div>
+        <div class="kcard-val">${l.Budget||'—'}</div>
+        <div class="kcard-foot"><span class="chip">${l.Source||'—'}</span></div>
+      </div>`).join('')||`<div style="color:var(--text3);font-size:12px;padding:4px 0">No leads</div>`}
+    </div>`;
+  }).join('');
+}
+
+function renderCommissions(){
+  const won=jobs.filter(j=>j.Outcome==='Won');
+  let total=0;
+  const tb=document.getElementById('comm-body');
+  if(!won.length){tb.innerHTML=`<tr><td colspan="7" class="empty-state">No won jobs yet</td></tr>`;document.getElementById('comm-foot').innerHTML='';return;}
+  tb.innerHTML=won.map(j=>{
+    const comm=Math.round((j['Quote Value']||0)*((j['Commission Rate']||0)/100));
+    total+=comm;
+    return`<tr>
+      <td class="primary"><div class="cell-av">${avEl(j['Lead Name'])}<span>${j['Lead Name']||'—'}</span></div></td>
+      <td><div class="cell-av">${avEl(j['Builder Name'])}<span>${j['Builder Name']||'—'}</span></div></td>
+      <td style="color:var(--text3)">${j['Job Type']||'—'}</td>
+      <td style="font-weight:500">${fmt(j['Quote Value']||0)}</td>
+      <td style="color:var(--amber)">${j['Commission Rate']||0}%</td>
+      <td style="color:var(--green);font-weight:600">${fmt(comm)}</td>
+      <td style="color:var(--text3)">${dateStr(j.Date)}</td>
+    </tr>`;
+  }).join('');
+  document.getElementById('comm-count').textContent=won.length+' won jobs';
+  document.getElementById('comm-foot').innerHTML=`Total commission earned: <span>${fmt(total)}</span>`;
+}
+
+function renderFollowups(){
+  const tb=document.getElementById('followups-body');
+  if(!followups.length){tb.innerHTML=`<tr><td colspan="4" class="empty-state">No follow-ups yet</td></tr>`;return;}
+  tb.innerHTML=followups.map(f=>`<tr>
+    <td style="color:${f.Done?'var(--text3)':'var(--text)'};${f.Done?'text-decoration:line-through':''}">${f.Task||'—'}</td>
+    <td>${f['Lead Name']||'—'}</td>
+    <td style="color:var(--text3)">${dateStr(f['Due Date'])}</td>
+    <td><input type="checkbox" ${f.Done?'checked':''} onchange="toggleFollowup('${f.id}',this.checked)" onclick="event.stopPropagation()"></td>
+  </tr>`).join('');
+}
+
+// Map
+function statusColor(s){return{New:'#9e9c96',Qualified:'#4a9edd','Sent to builder':'#d4a030',Won:'#5fb96a',Lost:'#d46060'}[s]||'#9e9c96';}
+
+function initMap(){
+  if(mapInstance)return;
+  mapInstance=L.map('map',{zoomControl:true}).setView([51.55,-3.42],9);
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{
+    attribution:'© OpenStreetMap © CARTO',maxZoom:19
+  }).addTo(mapInstance);
+  plotLeads();
+}
+
+function plotLeads(){
+  if(!mapInstance)return;
+  mapMarkers.forEach(m=>m.remove());
+  mapMarkers=[];
+  const budgetEst={'Under £20k':20000,'£20k–50k':35000,'£50k–100k':75000,'£100k+':150000};
+  let totalPipeline=0,count=0;
+
+  // Use SW_LEADS coords + any stored leads fallback to SW Wales center
+  const allLeads=[...SW_LEADS,...leads.filter(l=>!SW_LEADS.find(s=>s.Name===l.Name))];
+
+  allLeads.forEach(l=>{
+    const lat=l.lat||(51.4+Math.random()*0.5);
+    const lng=l.lng||(-3.9+Math.random()*1.2);
+    const status=l.Status||'New';
+    const color=statusColor(status);
+    const icon=L.divIcon({
+      html:`<div style="width:14px;height:14px;border-radius:50%;background:${color};border:2px solid rgba(255,255,255,0.3);box-shadow:0 0 6px ${color}55"></div>`,
+      className:'',iconSize:[14,14],iconAnchor:[7,7]
+    });
+    const marker=L.marker([lat,lng],{icon}).addTo(mapInstance);
+    marker.bindPopup(`<div style="background:#1a1a18;color:#e8e6e0;border-radius:8px;padding:12px;min-width:180px;font-family:-apple-system,sans-serif;font-size:12px">
+      <div style="font-weight:600;margin-bottom:6px">${l.Name||'—'}</div>
+      <div style="color:#9e9c96;margin-bottom:3px">${l['Job Type']||'—'}</div>
+      <div style="color:#9e9c96;margin-bottom:3px">${l.Postcode||'—'}</div>
+      <div style="margin-bottom:6px">${l.Budget||'—'}</div>
+      <div style="display:inline-block;padding:2px 8px;border-radius:20px;font-size:11px;background:${color}22;color:${color}">${status}</div>
+    </div>`,{className:'dark-popup'});
+    mapMarkers.push(marker);
+    if(!['Lost'].includes(status)){totalPipeline+=budgetEst[l.Budget]||0;count++;}
+  });
+
+  document.getElementById('map-total-projects').textContent=count;
+  document.getElementById('map-pipeline-val').textContent=fmt(totalPipeline);
+}
+
+function locateMe(){
+  if(!navigator.geolocation){alert('Geolocation not supported by your browser');return;}
+  navigator.geolocation.getCurrentPosition(pos=>{
+    const {latitude:lat,longitude:lng}=pos.coords;
+    if(mapInstance){
+      mapInstance.setView([lat,lng],12);
+      const icon=L.divIcon({
+        html:`<div style="width:18px;height:18px;border-radius:50%;background:#9f8fef;border:3px solid rgba(255,255,255,0.8);box-shadow:0 0 12px #9f8fef"></div>`,
+        className:'',iconSize:[18,18],iconAnchor:[9,9]
+      });
+      L.marker([lat,lng],{icon}).addTo(mapInstance).bindPopup('<div style="background:#1a1a18;color:#e8e6e0;padding:8px 12px;border-radius:6px;font-size:12px;font-family:-apple-system,sans-serif">Your location</div>').openPopup();
+    }
+  },err=>{alert('Could not get your location: '+err.message);});
+}
+
+// Calculator
+function calcUpdate(){
+  const jobKey=document.getElementById('c-jobtype').value;
+  const value=parseFloat(document.getElementById('c-value').value)||0;
+  const rate=parseFloat(document.getElementById('c-rate').value)||10;
+  const locKey=document.getElementById('c-location').value;
+  const jt=JOB_TYPES[jobKey];
+  const locMult=LOCATION_MULT[locKey]||1.0;
+  const adjValue=value*locMult;
+  const commission=adjValue*(rate/100);
+  const vat=commission*0.2;
+  const net=commission-vat;
+
+  document.getElementById('calc-revenue-result').innerHTML=`
+    <div class="calc-result-row"><span class="calc-result-key">Project value (adj. for location)</span><span class="calc-result-val">${fmt(adjValue)}</span></div>
+    <div class="calc-result-row"><span class="calc-result-key">Your commission (${rate}%)</span><span class="calc-result-val highlight">${fmt(commission)}</span></div>
+    <div class="calc-result-row"><span class="calc-result-key">VAT on commission (20%)</span><span class="calc-result-val amber">-${fmt(vat)}</span></div>
+    <div class="calc-result-row"><span class="calc-result-key">Net commission (ex-VAT)</span><span class="calc-result-val blue">${fmt(net)}</span></div>
+    <div class="calc-result-row"><span class="calc-result-key">Location multiplier</span><span class="calc-result-val">${(locMult*100).toFixed(0)}% of base rate</span></div>`;
+
+  const totalWeeks=jt.planWeeks+jt.buildWeeks+jt.finishWeeks;
+  document.getElementById('calc-timeline-result').innerHTML=`
+    <div class="calc-result-row"><span class="calc-result-key">Planning / design</span><span class="calc-result-val">${jt.planWeeks} weeks</span></div>
+    <div class="calc-result-row"><span class="calc-result-key">Build phase</span><span class="calc-result-val">${jt.buildWeeks} weeks</span></div>
+    <div class="calc-result-row"><span class="calc-result-key">Finishing / snagging</span><span class="calc-result-val">${jt.finishWeeks} weeks</span></div>
+    <div class="calc-result-row"><span class="calc-result-key">Total project timeline</span><span class="calc-result-val highlight">${totalWeeks} weeks (~${Math.round(totalWeeks/4.3)} months)</span></div>
+    <div class="calc-result-row"><span class="calc-result-key">Commission paid (est.)</span><span class="calc-result-val">Week ${totalWeeks} on completion</span></div>`;
+
+  const maxW=Math.max(jt.planWeeks,jt.buildWeeks,jt.finishWeeks);
+  document.getElementById('calc-timeline-bar').innerHTML=`
+    <div class="timeline-row"><span class="timeline-label">Planning</span><div class="timeline-track"><div class="timeline-fill" style="width:${(jt.planWeeks/maxW)*100}%;background:var(--blue)"></div></div><span class="timeline-val">${jt.planWeeks}w</span></div>
+    <div class="timeline-row"><span class="timeline-label">Build</span><div class="timeline-track"><div class="timeline-fill" style="width:${(jt.buildWeeks/maxW)*100}%;background:var(--amber)"></div></div><span class="timeline-val">${jt.buildWeeks}w</span></div>
+    <div class="timeline-row"><span class="timeline-label">Finishing</span><div class="timeline-track"><div class="timeline-fill" style="width:${(jt.finishWeeks/maxW)*100}%;background:var(--green)"></div></div><span class="timeline-val">${jt.finishWeeks}w</span></div>`;
+
+  document.getElementById('calc-market-result').innerHTML=`
+    <div class="calc-result-row"><span class="calc-result-key">Avg job value (SW Wales)</span><span class="calc-result-val">${fmt(jt.avgValue*locMult)}</span></div>
+    <div class="calc-result-row"><span class="calc-result-key">Avg commission at ${rate}%</span><span class="calc-result-val green">${fmt(jt.avgValue*locMult*(rate/100))}</span></div>
+    <div class="calc-result-row"><span class="calc-result-key">Typical timeline</span><span class="calc-result-val">${jt.avgWeeks} weeks</span></div>
+    <div style="margin-top:12px;padding:10px;background:var(--bg4);border-radius:6px;font-size:12px;color:var(--text3);line-height:1.6">${jt.marketNote}</div>`;
+
+  const annualComm=commission*12;
+  const annualNet=net*12;
+  const avgJobTime=totalWeeks/52;
+  document.getElementById('calc-annual-summary').innerHTML=`
+    <div class="calc-summary-item"><div class="calc-summary-num">${fmt(annualComm)}</div><div class="calc-summary-lbl">Gross commission/yr</div></div>
+    <div class="calc-summary-item"><div class="calc-summary-num" style="color:var(--green)">${fmt(annualNet)}</div><div class="calc-summary-lbl">Net commission/yr</div></div>
+    <div class="calc-summary-item"><div class="calc-summary-num" style="color:var(--amber)">12</div><div class="calc-summary-lbl">Jobs to close</div></div>
+    <div class="calc-summary-item"><div class="calc-summary-num" style="color:var(--blue)">${Math.round(avgJobTime*12)} mo</div><div class="calc-summary-lbl">Total build time</div></div>`;
+}
+
+function renderAll(){renderLeads();renderBuilders();renderJobs();renderPipeline();renderCommissions();renderFollowups();calcUpdate();}
+
+function showView(name){
+  document.querySelectorAll('.view-panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('view-'+name).classList.add('active');
+  const map2={leads:0,builders:1,jobs:2,pipeline:3,map:4,commissions:5,calculator:6,followups:7};
+  if(map2[name]!==undefined)document.querySelectorAll('.nav-item')[map2[name]].classList.add('active');
+  closeDetail();
+  if(name==='map'&&mapInstance){setTimeout(()=>mapInstance.invalidateSize(),100);}
+  if(name==='calculator')calcUpdate();
+}
+
+function openDetail(type,id){
+  const panel=document.getElementById('detail-panel');
+  if(type==='lead'){
+    const l=leads.find(x=>x.id===id);if(!l)return;
+    const relJobs=jobs.filter(j=>j['Lead Name']===l.Name);
+    document.getElementById('detail-name').textContent=l.Name||'Lead';
+    document.getElementById('detail-body').innerHTML=`
+      <div class="d-section">
+        <div class="d-label">Details</div>
+        <div class="d-row"><span class="d-key">Job type</span><span class="d-val">${l['Job Type']||'—'}</span></div>
+        <div class="d-row"><span class="d-key">Budget</span><span class="d-val">${l.Budget||'—'}</span></div>
+        <div class="d-row"><span class="d-key">Area</span><span class="d-val">${l.Postcode||'—'}</span></div>
+        <div class="d-row"><span class="d-key">Phone</span><span class="d-val">${l.Phone||'—'}</span></div>
+        <div class="d-row"><span class="d-key">Source</span><span class="d-val">${l.Source||'—'}</span></div>
+        <div class="d-row"><span class="d-key">Status</span><span class="d-val">${badge(l.Status)}</span></div>
+        ${l.Notes?`<div class="d-row"><span class="d-key">Notes</span><span class="d-val" style="white-space:normal;text-align:right">${l.Notes}</span></div>`:''}
+      </div>
+      ${relJobs.length?`<div class="d-section">
+        <div class="d-label">Jobs (${relJobs.length})</div>
+        ${relJobs.map(j=>`<div class="d-row"><span class="d-key">${j['Builder Name']||'—'}</span><div style="display:flex;gap:6px;align-items:center">${j['Quote Value']?`<span style="font-size:12px;font-weight:500;color:var(--text)">${fmt(j['Quote Value'])}</span>`:''}${badge(j.Outcome)}</div></div>`).join('')}
+      </div>`:''}
+      <div class="d-section">
+        <div class="d-label">Update status</div>
+        <select onchange="updateStatus('${l.id}',this.value)" style="width:100%;background:var(--bg3);border:1px solid var(--border2);border-radius:6px;padding:7px 10px;color:var(--text);font-size:13px;font-family:inherit">
+          ${['New','Qualified','Sent to builder','Won','Lost'].map(s=>`<option${s===l.Status?' selected':''}>${s}</option>`).join('')}
+        </select>
+      </div>`;
+  }
+  panel.classList.add('open');
+}
+function closeDetail(){document.getElementById('detail-panel').classList.remove('open');}
+
+async function updateStatus(id,status){
+  showLoading('Updating...');
+  await updateRecord('Leads',id,{Status:status});
+  await loadAllData();
+}
+async function toggleFollowup(id,done){
+  await updateRecord('Follow-ups',id,{Done:done});
+  const f=followups.find(x=>x.id===id);if(f)f.Done=done;
+  renderFollowups();
+}
+
+function openModal(type){
+  if(type==='job'){
+    document.getElementById('j-lead').innerHTML=leads.map(l=>`<option value="${l.Name}">${l.Name} — ${l['Job Type']||''}</option>`).join('');
+    document.getElementById('j-builder').innerHTML=builders.map(b=>`<option value="${b.Company}|${b.Commission}">${b.Company} (${b.Commission}%)</option>`).join('');
+  }
+  document.getElementById('modal-'+type).classList.add('open');
+}
+function closeModal(type){document.getElementById('modal-'+type).classList.remove('open');}
+
+async function saveLead(){
+  const name=document.getElementById('l-name').value.trim();if(!name)return;
+  showLoading('Saving lead...');
+  await createRecord('Leads',{Name:name,Phone:document.getElementById('l-phone').value,'Job Type':document.getElementById('l-job').value,Budget:document.getElementById('l-budget').value,Postcode:document.getElementById('l-postcode').value,Source:document.getElementById('l-source').value,Status:'New',Notes:document.getElementById('l-notes').value});
+  closeModal('lead');
+  ['l-name','l-phone','l-postcode','l-notes'].forEach(id=>document.getElementById(id).value='');
+  await loadAllData();
+}
+async function saveBuilder(){
+  const company=document.getElementById('b-company').value.trim();if(!company)return;
+  showLoading('Saving builder...');
+  await createRecord('Builders',{Company:company,Contact:document.getElementById('b-contact').value,Phone:document.getElementById('b-phone').value,Specialisms:document.getElementById('b-spec').value,Postcodes:document.getElementById('b-postcodes').value,Commission:parseInt(document.getElementById('b-comm').value)||10,Contract:'Pending'});
+  closeModal('builder');await loadAllData();
+}
+async function saveJob(){
+  const leadName=document.getElementById('j-lead').value;
+  const builderVal=document.getElementById('j-builder').value.split('|');
+  const lead=leads.find(l=>l.Name===leadName);
+  showLoading('Saving job...');
+  await createRecord('Jobs',{'Lead Name':leadName,'Builder Name':builderVal[0],'Job Type':lead?lead['Job Type']:'','Quote Value':parseInt(document.getElementById('j-quote').value)||0,Outcome:document.getElementById('j-outcome').value,'Commission Rate':parseInt(builderVal[1])||10,Date:new Date().toISOString().split('T')[0]});
+  closeModal('job');await loadAllData();
+}
+
+// Built-in Agent Response Engine
+function agentResponse(msg){
+  const m=msg.toLowerCase().trim();
+  if(m.includes('commission')||m.includes('earn')||m.includes('made')){
+    const won=jobs.filter(j=>j.Outcome==='Won');
+    const total=won.reduce((s,j)=>s+Math.round((j['Quote Value']||0)*((j['Commission Rate']||0)/100)),0);
+    const pending=jobs.filter(j=>j.Outcome==='Quoted').reduce((s,j)=>s+Math.round((j['Quote Value']||0)*((j['Commission Rate']||0)/100)),0);
+    const top=won.sort((a,b)=>(b['Quote Value']||0)-(a['Quote Value']||0))[0];
+    return{text:`<b>Commission summary:</b><br><br>Earned (won jobs): <b>${fmt(total)}</b><br>Pending (quoted): <b>${fmt(pending)}</b><br>Won jobs: <b>${won.length}</b>${top?`<br>Best earner: <b>${top['Lead Name']}</b>`:''}`,action:null};
+  }
+  if(m.includes('pipeline')||m.includes('overview')||m.includes('summary')||m.includes('how many')){
+    const counts={};
+    leads.forEach(l=>{counts[l.Status]=(counts[l.Status]||0)+1;});
+    const lines=Object.entries(counts).map(([s,c])=>`${s}: <b>${c}</b>`).join('<br>');
+    const bm={'Under £20k':20000,'£20k–50k':35000,'£50k–100k':75000,'£100k+':150000};
+    const pv=leads.filter(l=>!['Won','Lost'].includes(l.Status)).reduce((s,l)=>s+(bm[l.Budget]||0),0);
+    return{text:`<b>Pipeline overview:</b><br><br>${lines}<br><br>Total leads: <b>${leads.length}</b><br>Pipeline value: <b>${fmt(pv)}</b>`,action:null};
+  }
+  if(m.includes('builder')){
+    const areas=['cardiff','swansea','newport','bridgend','pontypridd','merthyr','penarth','barry','neath'];
+    const area=areas.find(a=>m.includes(a));
+    if(area){
+      const found=builders.filter(b=>(b.Postcodes||'').toLowerCase().includes(area));
+      if(found.length)return{text:`<b>Builders covering ${area.charAt(0).toUpperCase()+area.slice(1)}:</b><br><br>${found.map(b=>`<b>${b.Company}</b> — ${b.Specialisms||''} (${b.Commission}%, ${b.Contract})`).join('<br>')}`,action:null};
+      return{text:`No builders found covering <b>${area}</b> yet. You need to recruit one.`,action:null};
+    }
+    const signed=builders.filter(b=>b.Contract==='Signed');
+    return{text:`<b>Builder partners (${builders.length}):</b><br><br>Signed (${signed.length}):<br>${signed.map(b=>`<b>${b.Company}</b> — ${b.Commission}%`).join('<br>')}`,action:null};
+  }
+  if(m.includes('follow')||m.includes('chase')||m.includes('due')){
+    const pending=followups.filter(f=>!f.Done);
+    if(!pending.length)return{text:'No pending follow-ups! All clear.',action:null};
+    return{text:`<b>Pending follow-ups (${pending.length}):</b><br><br>${pending.map(f=>`<b>${f.Task}</b><br>${f['Lead Name']} · Due: ${dateStr(f['Due Date'])}`).join('<br><br>')}`,action:null};
+  }
+  if(m.includes('won')||m.includes('closed')){
+    const won=jobs.filter(j=>j.Outcome==='Won');
+    return{text:`<b>Won jobs (${won.length}):</b><br><br>${won.map(j=>`<b>${j['Lead Name']}</b> to ${j['Builder Name']}<br>${fmt(j['Quote Value']||0)} · Comm: ${fmt(Math.round((j['Quote Value']||0)*((j['Commission Rate']||0)/100)))}`).join('<br><br>')}`,action:null};
+  }
+  const addM=m.match(/add.+?lead[:\s]+(.+)/)||m.match(/new lead[:\s]+(.+)/);
+  if(addM){
+    const raw=addM[1];
+    const parts=raw.split(/[,]+/).map(s=>s.trim()).filter(Boolean);
+    const name=parts[0].split(' ').map(w=>w.charAt(0).toUpperCase()+w.slice(1)).join(' ');
+    const jtMap={'basement':'Basement conversion','loft':'Loft conversion','extension':'Extension','refurb':'Full refurb','kitchen':'Kitchen remodel','new build':'New build'};
+    const jk=Object.keys(jtMap).find(k=>raw.includes(k));
+    const bMap={'under':'Under £20k','20k':'£20k–50k','50k':'£50k–100k','100k':'£100k+'};
+    const bk=Object.keys(bMap).find(k=>raw.includes(k));
+    const data={Name:name,'Job Type':jk?jtMap[jk]:'Extension',Budget:bk?bMap[bk]:'£50k–100k',Postcode:parts[2]||'South Wales',Source:'Google Ads',Status:'New'};
+    return{text:`Adding lead: <b>${data.Name}</b> — ${data['Job Type']}, ${data.Budget}, ${data.Postcode}`,action:{type:'add_lead',data}};
+  }
+  const stM=m.match(/mark (.+?) as (new|qualified|sent|won|lost)/)||m.match(/update (.+?) to (new|qualified|sent|won|lost)/);
+  if(stM){
+    const stMap={'new':'New','qualified':'Qualified','sent':'Sent to builder','won':'Won','lost':'Lost'};
+    const name=stM[1].trim().split(' ').map(w=>w.charAt(0).toUpperCase()+w.slice(1)).join(' ');
+    return{text:`Updating <b>${name}</b> to <b>${stMap[stM[2]]}</b>...`,action:{type:'update_status',name,status:stMap[stM[2]]}};
+  }
+  if(m.includes('help')||m.includes('what can')){
+    return{text:`<b>Commands:</b><br><br><b>Data</b><br>• "commission summary"<br>• "pipeline overview"<br>• "won jobs"<br>• "follow-ups"<br><br><b>Search</b><br>• "builders in Cardiff"<br>• "leads in Swansea"<br><br><b>Actions</b><br>• "add a lead: John Smith, extension, CF10, £50k–100k"<br>• "mark Gareth Williams as won"`,action:null};
+  }
+  const won=jobs.filter(j=>j.Outcome==='Won');
+  const comm=won.reduce((s,j)=>s+Math.round((j['Quote Value']||0)*((j['Commission Rate']||0)/100)),0);
+  return{text:`You have <b>${leads.length} leads</b>, <b>${builders.length} builders</b>, and <b>${fmt(comm)}</b> commission from <b>${won.length} won jobs</b>.<br><br>Try: <i>"pipeline overview"</i>, <i>"builders in Cardiff"</i>, <i>"add a lead"</i>, or <i>"help"</i>.`,action:null};
+}
+
+// AI Agent
+function toggleAI(){document.getElementById('ai-panel').classList.toggle('open');}
+function addAIMessage(role,text){
+  const msgs=document.getElementById('ai-messages');
+  const div=document.createElement('div');
+  div.className=`ai-msg ${role}`;
+  div.innerHTML=text;
+  msgs.appendChild(div);
+  msgs.scrollTop=msgs.scrollHeight;
+  return div;
+}
+async function sendAI(){
+  const input=document.getElementById('ai-input');
+  const msg=input.value.trim();if(!msg)return;
+  input.value='';
+  addAIMessage('user',msg);
+  const thinking=addAIMessage('assistant','<span style="color:var(--text3);font-style:italic">Thinking...</span>');
+  const context=`You are an AI agent inside BuildFlow CRM, a construction lead generation broker CRM focused on South Wales. Current data:
+Leads (${leads.length}): ${leads.map(l=>`${l.Name} [${l.Status}, ${l['Job Type']}, ${l.Postcode}, ${l.Budget}]`).join('; ')}
+Builders (${builders.length}): ${builders.map(b=>`${b.Company} [${b.Contract}, ${b.Postcodes}, ${b.Commission}%]`).join('; ')}
+Jobs (${jobs.length}): ${jobs.map(j=>`${j['Lead Name']}→${j['Builder Name']} [${j.Outcome}, ${j['Quote Value']?'£'+j['Quote Value']:'TBC'}]`).join('; ')}
+Won commission total: £${jobs.filter(j=>j.Outcome==='Won').reduce((s,j)=>s+Math.round((j['Quote Value']||0)*((j['Commission Rate']||0)/100)),0).toLocaleString('en-GB')}
+If asked to add a lead, respond with ACTION:{"type":"add_lead","data":{"Name":"...","Job Type":"...","Budget":"...","Postcode":"...","Phone":"...","Source":"Google Ads","Status":"New"}}
+If asked to update a status: ACTION:{"type":"update_status","name":"Lead Name","status":"Won"}
+Be concise and business-focused. Format money as £X,XXX.`;
+  try{
+    const reply = agentResponse(msg);
+    thinking.innerHTML = reply.text.replace(/\*\*(.*?)\*\*/g,'<b>$1</b>').replace(/\n/g,'<br>');
+    if(reply.action){
+      const action = reply.action;
+      if(action.type==='add_lead'){
+        showLoading('Adding lead...');
+        await createRecord('Leads',{...action.data,Status:'New'});
+        await loadAllData();
+        addAIMessage('assistant','<b>Done!</b> Lead added to your CRM and saved to Airtable.');
+      } else if(action.type==='update_status'){
+        const l=leads.find(x=>x.Name.toLowerCase().includes(action.name.toLowerCase()));
+        if(l){showLoading('Updating...');await updateRecord('Leads',l.id,{Status:action.status});await loadAllData();addAIMessage('assistant',`<b>Done!</b> ${l.Name} updated to <b>${action.status}</b>.`);}
+        else{addAIMessage('assistant',`Couldn't find a lead matching "<b>${action.name}</b>". Check the name and try again.`);}
+      }
+    }
+  }catch(e){thinking.innerHTML='Something went wrong. Please try again.';}
+}
+
+document.addEventListener('click',e=>{
+  ['modal-lead','modal-builder','modal-job'].forEach(id=>{const m=document.getElementById(id);if(e.target===m)m.classList.remove('open');});
+});
+
+setup();
+</script>
+</body>
+</html>
