@@ -594,12 +594,40 @@ input[type=checkbox]{accent-color:var(--purple);width:13px;height:13px;cursor:po
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <script>
-const TOKEN='patIJ0xO1CjhmhYHL.7f3031244103e08c955f2f065cc611376a1e35ca5af52b6d3b36847afc0c7c79';
-const BASE_ID='appft0wJBqbIFG41I';
-const API='https://api.airtable.com/v0';
-
 let leads=[],builders=[],jobs=[],followups=[];
-let mapInstance=null, mapMarkers=[];
+let mapInstance=null,mapMarkers=[],nextId=Date.now();
+
+function genId(){return 'rec'+(nextId++);}
+
+function saveAll(){
+  localStorage.setItem('bf_leads',JSON.stringify(leads));
+  localStorage.setItem('bf_builders',JSON.stringify(builders));
+  localStorage.setItem('bf_jobs',JSON.stringify(jobs));
+  localStorage.setItem('bf_followups',JSON.stringify(followups));
+}
+
+function loadLocal(){
+  leads=JSON.parse(localStorage.getItem('bf_leads')||'[]');
+  builders=JSON.parse(localStorage.getItem('bf_builders')||'[]');
+  jobs=JSON.parse(localStorage.getItem('bf_jobs')||'[]');
+  followups=JSON.parse(localStorage.getItem('bf_followups')||'[]');
+}
+
+function createRecord(table,fields){
+  const rec={id:genId(),...fields};
+  if(table==='Leads')leads.push(rec);
+  else if(table==='Builders')builders.push(rec);
+  else if(table==='Jobs')jobs.push(rec);
+  else if(table==='Follow-ups')followups.push(rec);
+  saveAll();
+  return rec;
+}
+
+function updateRecord(table,id,fields){
+  const arr=table==='Leads'?leads:table==='Builders'?builders:table==='Jobs'?jobs:followups;
+  const i=arr.findIndex(r=>r.id===id);
+  if(i>-1){arr[i]={...arr[i],...fields};saveAll();}
+}
 
 // South Wales leads with real coordinates
 const SW_LEADS=[
