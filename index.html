@@ -665,18 +665,23 @@ function badge(s){const m={'New':'b-new','Qualified':'b-qualified','Sent to buil
 function avEl(name){return`<div class="avatar ${av(name)}">${initials(name)}</div>`;}
 
 function setup(){
-  showLoading('Loading BuildFlow CRM...');
-  loadLocal();
-  if(leads.length===0){
-    showLoading('Setting up demo data...');
-    for(const f of SW_LEADS){const {lat,lng,...fields}=f;createRecord('Leads',fields);}
-    for(const f of SW_BUILDERS)createRecord('Builders',f);
-    for(const f of SW_JOBS)createRecord('Jobs',f);
-    for(const f of SW_FOLLOWUPS)createRecord('Follow-ups',f);
+  try{
+    showLoading('Loading BuildFlow CRM...');
+    loadLocal();
+    if(leads.length===0){
+      for(const f of SW_LEADS){const {lat,lng,...fields}=f;createRecord('Leads',fields);}
+      for(const f of SW_BUILDERS)createRecord('Builders',f);
+      for(const f of SW_JOBS)createRecord('Jobs',f);
+      for(const f of SW_FOLLOWUPS)createRecord('Follow-ups',f);
+    }
+    hideLoading();
+    renderAll();
+    try{initMap();}catch(e){console.warn('Map init failed:',e);}
+  }catch(e){
+    console.error('Setup error:',e);
+    hideLoading();
+    renderAll();
   }
-  hideLoading();
-  renderAll();
-  initMap();
 }
 
 function showLoading(msg){document.getElementById('loading').classList.add('open');document.getElementById('loading-text').textContent=msg||'Loading...';}
