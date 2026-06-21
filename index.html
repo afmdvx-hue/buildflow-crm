@@ -594,7 +594,7 @@ input[type=checkbox]{accent-color:var(--purple);width:13px;height:13px;cursor:po
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <script>
-const TOKEN='patfMPyfwpYTrkZPA.663537c8a62ef367292ef785b6f7ffeb91052c233d800c7d6c52cc47c73b292f';
+const TOKEN='patIJ0xO1CjhmhYHL.7f3031244103e08c955f2f065cc611376a1e35ca5af52b6d3b36847afc0c7c79';
 const BASE_ID='appft0wJBqbIFG41I';
 const API='https://api.airtable.com/v0';
 
@@ -664,81 +664,15 @@ function dateStr(d){if(!d)return'—';try{return new Date(d).toLocaleDateString(
 function badge(s){const m={'New':'b-new','Qualified':'b-qualified','Sent to builder':'b-sent','Won':'b-won','Lost':'b-lost','Signed':'b-signed','Pending':'b-pending','Introduced':'b-introduced','Quoted':'b-quoted'};return`<span class="badge ${m[s]||'b-new'}">${s||'New'}</span>`;}
 function avEl(name){return`<div class="avatar ${av(name)}">${initials(name)}</div>`;}
 
-async function atFetch(path,opts={}){
-  const r=await fetch(`${API}/${BASE_ID}/${path}`,{headers:{'Authorization':`Bearer ${TOKEN}`,'Content-Type':'application/json'},...opts});
-  return r.json();
-}
-async function getAllRecords(table){
-  let records=[],offset=null;
-  do{
-    const d=await atFetch(offset?`${table}?offset=${offset}`:table);
-    if(d.error){return[];}
-    records=records.concat(d.records||[]);
-    offset=d.offset||null;
-  }while(offset);
-  return records;
-}
-async function createRecord(table,fields){return atFetch(table,{method:'POST',body:JSON.stringify({fields,typecast:true})});}
-async function updateRecord(table,id,fields){return atFetch(`${table}/${id}`,{method:'PATCH',body:JSON.stringify({fields,typecast:true})});}
-
-async function setup(){
-  showLoading('Connecting to Airtable...');
-  try {
-    const testRes = await fetch(`${API}/${BASE_ID}/Leads?maxRecords=1`,{headers:{'Authorization':`Bearer ${TOKEN}`}});
-    const testData = await testRes.json();
-    if(testData.error){
-      const msg = testData.error.message||JSON.stringify(testData.error);
-      showLoading('Airtable error: '+msg);
-      console.error('Airtable error:',testData);
-      return;
-    }
-    await loadAllData();
-  } catch(e) {
-    showLoading('Connection failed: '+e.message+'. Check you are online.');
-    console.error(e);
-  }
-}
-
-async function seedIfEmpty(){
-  // Only seed if tables are completely empty
+function setup(){
+  showLoading('Loading BuildFlow CRM...');
+  loadLocal();
   if(leads.length===0){
-    showLoading('Seeding South Wales leads...');
-    for(const f of SW_LEADS){const {lat,lng,...fields}=f; await createRecord('Leads',fields);}
-  }
-  if(builders.length===0){
-    showLoading('Seeding builders...');
-    for(const f of SW_BUILDERS) await createRecord('Builders',f);
-  }
-  if(jobs.length===0){
-    showLoading('Seeding jobs...');
-    for(const f of SW_JOBS) await createRecord('Jobs',f);
-  }
-  if(followups.length===0){
-    showLoading('Seeding follow-ups...');
-    for(const f of SW_FOLLOWUPS) await createRecord('Follow-ups',f);
-  }
-  // Reload after seeding
-  const needsReload = leads.length===0||builders.length===0||jobs.length===0||followups.length===0;
-  if(needsReload) await loadAllData();
-}
-
-async function loadAllData(){
-  showLoading('Loading data...');
-  const [lr,br,jr,fr]=await Promise.all([
-    getAllRecords('Leads'),
-    getAllRecords('Builders'),
-    getAllRecords('Jobs'),
-    getAllRecords('Follow-ups')
-  ]);
-  leads=lr.map(r=>({id:r.id,...r.fields}));
-  builders=br.map(r=>({id:r.id,...r.fields}));
-  jobs=jr.map(r=>({id:r.id,...r.fields}));
-  followups=fr.map(r=>({id:r.id,...r.fields}));
-  // Seed demo data if tables are empty
-  const wasEmpty=leads.length===0||builders.length===0;
-  if(wasEmpty){
-    await seedIfEmpty();
-    return; // seedIfEmpty calls loadAllData again after seeding
+    showLoading('Setting up demo data...');
+    for(const f of SW_LEADS){const {lat,lng,...fields}=f;createRecord('Leads',fields);}
+    for(const f of SW_BUILDERS)createRecord('Builders',f);
+    for(const f of SW_JOBS)createRecord('Jobs',f);
+    for(const f of SW_FOLLOWUPS)createRecord('Follow-ups',f);
   }
   hideLoading();
   renderAll();
@@ -1019,16 +953,8 @@ function openDetail(type,id){
 }
 function closeDetail(){document.getElementById('detail-panel').classList.remove('open');}
 
-async function updateStatus(id,status){
-  showLoading('Updating...');
-  await updateRecord('Leads',id,{Status:status});
-  await loadAllData();
-}
-async function toggleFollowup(id,done){
-  await updateRecord('Follow-ups',id,{Done:done});
-  const f=followups.find(x=>x.id===id);if(f)f.Done=done;
-  renderFollowups();
-}
+function updateStatus(id,status){updateRecord('Leads',id,{Status:status});const l=leads.find(x=>x.id===id);if(l)l.Status=status;renderAll();openDetail('lead',id);}
+function toggleFollowup(id,done){updateRecord('Follow-ups',id,{Done:done});const f=followups.find(x=>x.id===id);if(f)f.Done=done;renderFollowups();}
 
 function openModal(type){
   if(type==='job'){
@@ -1039,27 +965,24 @@ function openModal(type){
 }
 function closeModal(type){document.getElementById('modal-'+type).classList.remove('open');}
 
-async function saveLead(){
+function saveLead(){
   const name=document.getElementById('l-name').value.trim();if(!name)return;
-  showLoading('Saving lead...');
-  await createRecord('Leads',{Name:name,Phone:document.getElementById('l-phone').value,'Job Type':document.getElementById('l-job').value,Budget:document.getElementById('l-budget').value,Postcode:document.getElementById('l-postcode').value,Source:document.getElementById('l-source').value,Status:'New',Notes:document.getElementById('l-notes').value});
+  createRecord('Leads',{Name:name,Phone:document.getElementById('l-phone').value,'Job Type':document.getElementById('l-job').value,Budget:document.getElementById('l-budget').value,Postcode:document.getElementById('l-postcode').value,Source:document.getElementById('l-source').value,Status:'New',Notes:document.getElementById('l-notes').value});
   closeModal('lead');
   ['l-name','l-phone','l-postcode','l-notes'].forEach(id=>document.getElementById(id).value='');
-  await loadAllData();
+  renderAll();
 }
-async function saveBuilder(){
+function saveBuilder(){
   const company=document.getElementById('b-company').value.trim();if(!company)return;
-  showLoading('Saving builder...');
-  await createRecord('Builders',{Company:company,Contact:document.getElementById('b-contact').value,Phone:document.getElementById('b-phone').value,Specialisms:document.getElementById('b-spec').value,Postcodes:document.getElementById('b-postcodes').value,Commission:parseInt(document.getElementById('b-comm').value)||10,Contract:'Pending'});
-  closeModal('builder');await loadAllData();
+  createRecord('Builders',{Company:company,Contact:document.getElementById('b-contact').value,Phone:document.getElementById('b-phone').value,Specialisms:document.getElementById('b-spec').value,Postcodes:document.getElementById('b-postcodes').value,Commission:parseInt(document.getElementById('b-comm').value)||10,Contract:'Pending'});
+  closeModal('builder');renderAll();
 }
-async function saveJob(){
+function saveJob(){
   const leadName=document.getElementById('j-lead').value;
   const builderVal=document.getElementById('j-builder').value.split('|');
   const lead=leads.find(l=>l.Name===leadName);
-  showLoading('Saving job...');
-  await createRecord('Jobs',{'Lead Name':leadName,'Builder Name':builderVal[0],'Job Type':lead?lead['Job Type']:'','Quote Value':parseInt(document.getElementById('j-quote').value)||0,Outcome:document.getElementById('j-outcome').value,'Commission Rate':parseInt(builderVal[1])||10,Date:new Date().toISOString().split('T')[0]});
-  closeModal('job');await loadAllData();
+  createRecord('Jobs',{'Lead Name':leadName,'Builder Name':builderVal[0],'Job Type':lead?lead['Job Type']:'','Quote Value':parseInt(document.getElementById('j-quote').value)||0,Outcome:document.getElementById('j-outcome').value,'Commission Rate':parseInt(builderVal[1])||10,Date:new Date().toISOString().split('T')[0]});
+  closeModal('job');renderAll();
 }
 
 // Built-in Agent Response Engine
@@ -1158,12 +1081,11 @@ Be concise and business-focused. Format money as £X,XXX.`;
       const action = reply.action;
       if(action.type==='add_lead'){
         showLoading('Adding lead...');
-        await createRecord('Leads',{...action.data,Status:'New'});
-        await loadAllData();
+        createRecord('Leads',{...action.data,Status:'New'});renderAll();
         addAIMessage('assistant','<b>Done!</b> Lead added to your CRM and saved to Airtable.');
       } else if(action.type==='update_status'){
         const l=leads.find(x=>x.Name.toLowerCase().includes(action.name.toLowerCase()));
-        if(l){showLoading('Updating...');await updateRecord('Leads',l.id,{Status:action.status});await loadAllData();addAIMessage('assistant',`<b>Done!</b> ${l.Name} updated to <b>${action.status}</b>.`);}
+        if(l){updateRecord('Leads',l.id,{Status:action.status});const idx=leads.findIndex(x=>x.id===l.id);if(idx>-1)leads[idx].Status=action.status;renderAll();addAIMessage('assistant',`<b>Done!</b> ${l.Name} updated to <b>${action.status}</b>.`);}
         else{addAIMessage('assistant',`Couldn't find a lead matching "<b>${action.name}</b>". Check the name and try again.`);}
       }
     }
